@@ -8,10 +8,10 @@ namespace Kushner.Nsudotnet.LinesCounter
     {
         private readonly Explorer _explorer;
         private Boolean _isMultilineComment;
-        private static readonly Regex MultilineRegex = new Regex(@"/\*.*\*/");
-        private static readonly Regex StartMultilineRegex = new Regex(@"/\*.*");
-        private static readonly Regex FinishMultilineRegex = new Regex(@".*\*/");
-        private static readonly Regex SingleLineRegex = new Regex(@".*//.*");
+        private static readonly Regex MultilineRegex = new Regex(@"(/\*).*?(\*/)");
+        private static readonly Regex StartMultilineRegex = new Regex(@"(/\*).*");
+        private static readonly Regex FinishMultilineRegex = new Regex(@".*?(\*/)");
+        private static readonly Regex SingleLineRegex = new Regex(@"(//).*");
         private static readonly Regex QuotesRegex = new Regex("\".*\"");
 
         public Counter(Explorer exp)
@@ -52,29 +52,34 @@ namespace Kushner.Nsudotnet.LinesCounter
             while (flag)
             {
                 flag = false;
-                str = QuotesRegex.Replace(str, "\"\"");
-                str = MultilineRegex.Replace(str, "");
+                str = QuotesRegex.Replace(str, "k");
+                if (!_isMultilineComment)
+                {
+                    str = MultilineRegex.Replace(str, "");
+                }
                 str = SingleLineRegex.Replace(str, "");
 
                 if (!_isMultilineComment && StartMultilineRegex.IsMatch(str))
                 {
-                    str = StartMultilineRegex.Replace(str, "");
+                    str = StartMultilineRegex.Replace(str, "", 1);
                     _isMultilineComment = true;
                     flag = true;
                     if (str.Length > 0)
                     {
+                        Console.WriteLine(str);
                         return true;
                     }
                 }
                 else if (_isMultilineComment && FinishMultilineRegex.IsMatch(str))
                 {
-                    str = FinishMultilineRegex.Replace(str, "");
+                    str = FinishMultilineRegex.Replace(str, "", 1);
                     _isMultilineComment = false;
                     flag = true;
                 }
             }
             if (str.Length != 0 && !_isMultilineComment)
             {
+                Console.WriteLine(str);
                 return true;
             }
             else
