@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 
 namespace Kushner.Nsudotnet.Enigma
@@ -12,9 +13,35 @@ namespace Kushner.Nsudotnet.Enigma
             _algorithm = algorithm;
         }
 
-        public void DecryptStringFromBytes_Aes(FileInfo fileInfo)
+        public void Decrypt(FileInfo encryptfileInfo, String outputFileName, String keyFile)
         {
+            byte[] key, IV;
+            using (StreamReader sr = new StreamReader(keyFile))
+            {
+                key = Convert.FromBase64String(sr.ReadLine());
+                IV = Convert.FromBase64String(sr.ReadLine());
+            }
 
+            ICryptoTransform decryptor = _algorithm.CreateDecryptor(key, IV);
+            _algorithm.Key = key;
+            _algorithm.IV = IV;
+
+
+            using (CryptoStream csDecript = new CryptoStream(encryptfileInfo.OpenRead(), decryptor, CryptoStreamMode.Read))
+            {
+                using (StreamReader sr = new StreamReader(csDecript))
+                {
+                    using (StreamWriter sw = new StreamWriter(File.OpenWrite(outputFileName)))
+                    {
+                        String line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
+                }        
+            }
+            
         }
     }
 }

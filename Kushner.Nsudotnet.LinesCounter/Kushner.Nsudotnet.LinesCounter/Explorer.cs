@@ -38,26 +38,32 @@ namespace Kushner.Nsudotnet.LinesCounter
                 _current = null;
                 return false;
             }
-            else if (_files.Count == 0 && _directories.Count != 0)
+            if (_files.Count == 0 && _directories.Count != 0)
             {
-                DirectoryInfo directory = _directories.Dequeue();
-                foreach (DirectoryInfo tmp in directory.GetDirectories())
+                while (_files.Count == 0 && _directories.Count != 0)
                 {
-                    _directories.Enqueue(tmp);
-                }
+                    DirectoryInfo directory = _directories.Dequeue();
+                    foreach (DirectoryInfo tmp in directory.GetDirectories())
+                    {
+                        _directories.Enqueue(tmp);
+                    }
 
-                foreach (FileInfo tmp in directory.GetFiles(_extension))
-                {
-                    _files.Enqueue(tmp);
-                }
+                    foreach (FileInfo tmp in directory.GetFiles(_extension))
+                    {
+                        _files.Enqueue(tmp);
+                    }
 
-                if (_files.Count != 0)
-                {
-                    _current = _files.Dequeue();
-                }
-                else
-                {
-                    return false;
+                    if (_files.Count != 0)
+                    {
+                        _current = _files.Dequeue();
+                        return true;
+                    }
+                    if (_directories.Count == 0 && _files.Count == 0)
+                    {
+                        _current = null;
+                        return false;
+                    }        
+
                 }
             }
             else if (_files.Count != 0)

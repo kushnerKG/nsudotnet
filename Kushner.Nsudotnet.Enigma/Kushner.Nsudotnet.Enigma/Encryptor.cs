@@ -6,6 +6,7 @@ namespace Kushner.Nsudotnet.Enigma
 {
     class Encryptor
     {
+        private static readonly String  KeyFileName = "file.key.txt";
         private SymmetricAlgorithm _algorithm;
 
         public Encryptor(SymmetricAlgorithm algorithm)
@@ -15,33 +16,34 @@ namespace Kushner.Nsudotnet.Enigma
 
         public void EncryptStringToBytes_Aes(FileInfo inputFileInfo, String outputFileName)
         {
-            /*
-            using (Aes aesAlg = Aes.Create())
+            byte[] Key = _algorithm.Key;
+            byte[] IV = _algorithm.IV;
+
+            using (StreamWriter sw = new StreamWriter(KeyFileName))
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
+                sw.Write(Convert.ToBase64String(Key));
+                sw.Write("\n");
+                sw.Write(Convert.ToBase64String(IV));
+            }
 
-                // Create a decrytor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key
-, aesAlg.IV);
+            ICryptoTransform encryptor = _algorithm.CreateEncryptor(Key, IV);
 
-                // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
+            using (CryptoStream csEncrypt = new CryptoStream(File.OpenWrite(outputFileName), encryptor, CryptoStreamMode.Write))
+            {
+                using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
                 {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt
-, encryptor, CryptoStreamMode.Write))
+                    using (StreamReader inputStreamReader = new StreamReader(inputFileInfo.OpenRead()))
                     {
-                        using (StreamWriter swEncrypt = new StreamWriter(
-csEncrypt))
+                        String line;
+                        while ((line = inputStreamReader.ReadLine()) != null)
                         {
-
-                            //Write all data to the stream.
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
+                            swEncrypt.Write(line + "\n");
+                        }   
                     }
                 }
-            }*/
+            }
+   
         }
+
     }
 }

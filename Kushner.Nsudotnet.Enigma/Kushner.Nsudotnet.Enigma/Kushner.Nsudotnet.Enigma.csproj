@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Decriptor.cs" />
     <Compile Include="Encryptor.cs" />
+    <Compile Include="Executor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

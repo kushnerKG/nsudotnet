@@ -1,19 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace Kushner.Nsudotnet.LinesCounter
 {
     class Counter
     {
         private readonly Explorer _explorer;
-        private Boolean _isMultilineComment;
-        private static readonly Regex MultilineRegex = new Regex(@"(/\*).*?(\*/)");
-        private static readonly Regex StartMultilineRegex = new Regex(@"(/\*).*");
-        private static readonly Regex FinishMultilineRegex = new Regex(@".*?(\*/)");
-        private static readonly Regex SingleLineRegex = new Regex(@"(//).*");
-        private static readonly Regex QuotesRegex = new Regex("\".*\"");
-
+       
         public Counter(Explorer exp)
         {
             _explorer = exp;
@@ -22,70 +15,77 @@ namespace Kushner.Nsudotnet.LinesCounter
         public int DoCount()
         {
             int counter = 0;
+            int k = 0;
             foreach (FileInfo fileInfo in _explorer)
             {
-                counter += DoWork(File.ReadAllLines(fileInfo.FullName));
+                StreamReader sr = new StreamReader(fileInfo.OpenRead());
+                counter += DoWork(sr);
+                k++;
             }
             return counter;
         }
 
-        private int DoWork(String[] lines)
+        private int DoWork(StreamReader sr)
         {
             int count = 0;
-            _isMultilineComment = false;
-
-            foreach (string s in lines)
+            bool isLinesComment = false, isMultilineComment = false, slash = false, star = false;
+            
+            String line;
+            while ((line = sr.ReadLine()) != null)
             {
-                if (Check(s))
+                int localCounter = 0;
+                for (int i = 0; i < line.Length; i++)
+                {
+                    if (line[i] == '/')
+                    {
+                        if (slash)
+                        {
+                            isLinesComment = true;
+                        }
+                        else
+                        {
+                            slash = true;
+                        }
+                        if (star)
+                        {
+                            isMultilineComment = false;
+                            slash = false;
+                        }
+                    }
+                    else if (line[i] == '*')
+                    {
+                        if (slash)
+                        {
+                            isMultilineComment = true;
+                        }
+                        else
+                        {
+                            star = true;
+                        }
+                    }
+                    else
+                    {
+                        if (slash || star)
+                        {
+                            localCounter++;
+                        }
+                        slash = false;
+                        star = false;
+                    }
+                    
+                    if (!isMultilineComment && !isLinesComment && !slash && !star)
+                    {
+                        localCounter++;
+                    }
+                }
+                if (!isMultilineComment && !isLinesComment && (localCounter > 0))
                 {
                     count++;
                 }
-
+                isLinesComment = false;
+                
             }
-
             return count;
-        }
-
-        private bool Check(String str)
-        {
-            bool flag = true;
-            while (flag)
-            {
-                flag = false;
-                str = QuotesRegex.Replace(str, "k");
-                if (!_isMultilineComment)
-                {
-                    str = MultilineRegex.Replace(str, "");
-                }
-                str = SingleLineRegex.Replace(str, "");
-
-                if (!_isMultilineComment && StartMultilineRegex.IsMatch(str))
-                {
-                    str = StartMultilineRegex.Replace(str, "", 1);
-                    _isMultilineComment = true;
-                    flag = true;
-                    if (str.Length > 0)
-                    {
-                        Console.WriteLine(str);
-                        return true;
-                    }
-                }
-                else if (_isMultilineComment && FinishMultilineRegex.IsMatch(str))
-                {
-                    str = FinishMultilineRegex.Replace(str, "", 1);
-                    _isMultilineComment = false;
-                    flag = true;
-                }
-            }
-            if (str.Length != 0 && !_isMultilineComment)
-            {
-                Console.WriteLine(str);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        }   
     }
 }
