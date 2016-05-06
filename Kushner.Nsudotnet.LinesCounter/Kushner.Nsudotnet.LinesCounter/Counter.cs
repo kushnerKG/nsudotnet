@@ -6,7 +6,7 @@ namespace Kushner.Nsudotnet.LinesCounter
     class Counter
     {
         private readonly Explorer _explorer;
-       
+               
         public Counter(Explorer exp)
         {
             _explorer = exp;
@@ -15,12 +15,13 @@ namespace Kushner.Nsudotnet.LinesCounter
         public int DoCount()
         {
             int counter = 0;
-            int k = 0;
             foreach (FileInfo fileInfo in _explorer)
             {
-                StreamReader sr = new StreamReader(fileInfo.OpenRead());
-                counter += DoWork(sr);
-                k++;
+                using (StreamReader sr = new StreamReader(fileInfo.OpenRead()))
+                {
+                    counter += DoWork(sr);
+                }
+                
             }
             return counter;
         }

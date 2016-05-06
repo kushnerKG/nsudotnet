@@ -17,11 +17,6 @@ namespace Kushner.Nsudotnet.Enigma
 
     class Executor
     {
-        public Executor()
-        {
-
-        }
-
         public void Execute(String[] argumentsLine)
         {
             Algorithms algorithms;

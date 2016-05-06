@@ -30,19 +30,11 @@ namespace Kushner.Nsudotnet.Enigma
 
             using (CryptoStream csEncrypt = new CryptoStream(File.OpenWrite(outputFileName), encryptor, CryptoStreamMode.Write))
             {
-                using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                using (FileStream inputFileStream = inputFileInfo.OpenRead())
                 {
-                    using (StreamReader inputStreamReader = new StreamReader(inputFileInfo.OpenRead()))
-                    {
-                        String line;
-                        while ((line = inputStreamReader.ReadLine()) != null)
-                        {
-                            swEncrypt.Write(line + "\n");
-                        }   
-                    }
+                    inputFileStream.CopyTo(csEncrypt);
                 }
             }
-   
         }
 
     }

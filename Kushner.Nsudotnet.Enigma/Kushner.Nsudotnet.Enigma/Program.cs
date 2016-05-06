@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace Kushner.Nsudotnet.Enigma
 {
@@ -24,6 +25,10 @@ namespace Kushner.Nsudotnet.Enigma
             catch (FileNotFoundException)
             {
                 Console.WriteLine("не существеут переданного файла");
+            }
+            catch (CryptographicException)
+            {
+                Console.WriteLine("неправильный алгоритм");
             }
             Console.ReadKey();
         }
